@@ -1,0 +1,32 @@
+@startuml
+[*] --> State1
+
+state State1 as "Z0\n InitializationState\n": /enter init() and calibrate() and displayTeamName() 
+state State2 as "Z1\n ReadyState\n": /enter /leave start timer 1
+state State3 as "Z2\n CalibrationState\n": /enter calibrate()
+state State4 as "Z3\n ParameterSetState\n": /enter setParameterSet() done
+state State5 as "Z4\n SearchingStartlineState\n": /enter reset timer1 and start dual drive motor system \n /leave playBeep()
+state State6 as "Z5\n DriveLapState\n": /enter start timer 2 \n /process findTracklineAndDrive()
+state State7 as "Z6\n LapFinishedState\n": /enter stop timer 2 and displayLapTime() and reset dual drive motor system and playBeep() \n /leave reset timer 2
+state State8 as "Z7\n SearchTrackState\n": /enter start timer 1 \n /process findTrackline()
+state State9 as "Z8\n ErrorState\n": /entry stop dual drive motor system and playAlarm() and displayError()
+
+ 
+State1 -right--> State2 : calibration done
+State2 -up-> State3 : [ButtonC pressed]
+State2 -down-> State4 : [ButtonB pressed]
+State2 -right-> State5 : [ButtonA pressed] and [timer 1 >= 3s]
+
+State2 <-down- State3 : calibration done
+State2 <-left- State4 : [ButtonB pressed] or configuration done
+
+State5 -right-> State6 : Application Startline 
+State6 -down-> State8 : Application not found track
+State8 -up-> State6 : Application found track
+State6 -down-> State7 : Startline found
+State6 -up-> State9 : [timer 2 >= 20s]
+State7 -down-> State2 : [ButtonA pressed]
+State8 -up-> State9 : [timer 1 >= 5s]
+State5 --> State9 : [timer 1 >=8s]
+State9 -down-> State2 : [ButtonA pressed]
+@enduml
